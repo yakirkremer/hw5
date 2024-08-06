@@ -1,0 +1,14 @@
+0 patch and compile
+1 cp makefile.basic Makefile; make
+2 cp makefile.basic Makefile; make -n
+3 make -f makefile.basic
+4 cp makefile.basic Makefile; make --gen-depgraph=x
+5 cp makefile.basic Makefile; make --gen-depgraph=x b
+6 cp makefile.unreachable Makefile; make --gen-depgraph=x a d
+7 cp makefile.basic Makefile; make --gen-depgraph=/x
+8 cp makefile.basic Makefile; make --gen-depgraph=/proc/version
+9 cp makefile.basic Makefile; make --gen-depgraph=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+10 make --gen-depgraph=x -f makefile.basic
+11 cp makefile.unreachable Makefile; make --gen-depgraph=x
+12 cp makefile.vars Makefile; ABC=qwe make --gen-depgraph=x DEFGH=asd
+13 cp makefile.includes Makefile; cp makefile.includes.b m.b; cp makefile.includes.c m.c; make --gen-depgraph=x
