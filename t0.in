@@ -1,0 +1,4 @@
+bool i;
+bool j;
+if(true)
+    int a;

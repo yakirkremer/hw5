@@ -10,6 +10,7 @@
 
 %option noyywrap
 %option yylineno
+%option noreject
 
 whitespace [ \t\n\r]
 printable [ -~]

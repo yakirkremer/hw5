@@ -54,16 +54,19 @@ Program: Statements                         {}
 Statements: Statement                       {}
 Statements: Statements Statement            {}
 
+//Condition: IF LPAREN ExpBool RPAREN M  {CodeBuffer::instance().emit(dynamic_cast<ExpBool*>($3)->trueLabel);} Statement {CodeBuffer::instance().emit(dynamic_cast<ExpBool*>($3)->falseLabel);}
+
+
 Statement: LBRACE {sym_table_scopes.open_scope();} Statements RBRACE        {sym_table_scopes.close_scope();}
 
 Statement: Type ID SC                       {$$ = new Statement($1, $2,yylineno);}
 Statement: Type ID ASSIGN Exp SC            {$$ = new Statement($1, $2, dynamic_cast<Exp*>($4),yylineno, true);}
 
 Statement: ID ASSIGN Exp SC                 {$$ = new Statement($1, dynamic_cast<Exp*>($3),yylineno, true);}
-Statement: Call SC                          {$$ =$1;}
-Statement: RETURN SC                        {$$ =$1;}
-| IF LPAREN ExpBool RPAREN M Statement { $$ = new Statement(dynamic_cast<Exp*>($3), "BOOL",yylineno);sym_table_scopes.close_scope();}
-| IF LPAREN ExpBool RPAREN M Statement ELSE { $$ = new Statement(dynamic_cast<Exp*>($3), "BOOL",yylineno);sym_table_scopes.close_scope();} M Statement {sym_table_scopes.close_scope();}
+Statement: Call SC                          {$$ =new Statement($1,yylineno);}
+Statement: RETURN SC                        {$$ =new Statement($1,yylineno);}
+| IF LPAREN ExpBool RPAREN M  Statement  {     sym_table_scopes.close_scope();}
+| IF   LPAREN ExpBool RPAREN M  Statement  ELSE {  sym_table_scopes.close_scope();} M {$$ = new Node(CodeBuffer::instance().freshLabel());CodeBuffer::instance().emit("br label %" + $$->terminalVal);  CodeBuffer::instance().emit(dynamic_cast<ExpBool*>($3)->falseLabel + ":");} Statement {sym_table_scopes.close_scope();CodeBuffer::instance().emit($10->terminalVal + ":");}
 
 
 
@@ -83,25 +86,31 @@ Exp: LPAREN Exp RPAREN                      {$$ = $2;}
 Exp: Exp MULTIPLICATIVE Exp                 {$$ = new Exp("mul", dynamic_cast<Exp*>($1), dynamic_cast<Exp*>($3),yylineno);}
 Exp: Exp ADDITIVE Exp                       {$$ = new Exp("add", dynamic_cast<Exp*>($1), dynamic_cast<Exp*>($3),yylineno);}
 
-Exp: ID                                     {$$ = new Exp($1->name,$1,true,yylineno);}
-Exp: Call                                   {$$ = new Exp($1->name,$1,false,yylineno);}
+Exp: ID                                     {$$ = new Exp($1->terminalVal,$1,true,yylineno);}
+Exp: Call                                   {$$ = new Exp($1->terminalVal,$1,false,yylineno);}
 
 Exp: NUM                                    {$$ = new Exp("INT",$1,yylineno);}
 Exp: NUM B                                  {$$ = new Exp("BYTE",$1,yylineno);}
 Exp: STRING                                 {$$ = new Exp("STRING",$1,yylineno);}
-Exp: TRUE                                   {$$ = new Exp("BOOL",$1,yylineno);}
-Exp: FALSE                                  {$$ = new Exp("BOOL",$1,yylineno);}
 
-Exp: NOT Exp                                {$$ = new Exp("BOOL", $1->name, dynamic_cast<Exp*>($2), nullptr,yylineno);}
-Exp: Exp AND Exp                            {$$ = new Exp("BOOL", $2->name, dynamic_cast<Exp*>($1), dynamic_cast<Exp*>($3),yylineno);}
-Exp: Exp OR Exp                             {$$ = new Exp("BOOL", $2->name, dynamic_cast<Exp*>($1), dynamic_cast<Exp*>($3),yylineno);}
-Exp: Exp RELOP Exp                          {$$ = new Exp("BOOL", "relop", dynamic_cast<Exp*>($1), dynamic_cast<Exp*>($3),yylineno);}
-Exp: Exp EQUALITY Exp                       {$$ = new Exp("BOOL", "relop", dynamic_cast<Exp*>($1), dynamic_cast<Exp*>($3),yylineno);}
+Exp: TRUE                                   {$$ = new Exp("BOOL", $1, yylineno);}
+Exp: FALSE                                  {$$ = new Exp("BOOL", $1, yylineno);}
 
-Exp: LPAREN Type RPAREN Exp                 {$$ = new Exp(dynamic_cast<Exp*>($4), $2->name,yylineno);}
-ExpBool: Exp                                {$$ = new ExpBool(dynamic_cast<Exp*>($1),yylineno);}
+ExpBool: NOT ExpBool                               {$$ = new ExpBool( "not", dynamic_cast<Exp*>($2), dynamic_cast<Exp*>($2),yylineno);}
+ExpBool: ExpBool AND ExpBool                            {$$ = new ExpBool( $2->terminalVal, dynamic_cast<Exp*>($1), dynamic_cast<Exp*>($3),yylineno);}
+ExpBool: ExpBool OR ExpBool                            {}
+
+ExpBool: Exp RELOP Exp                          {$$ = new Exp("relop",dynamic_cast<Exp*>($1), dynamic_cast<Exp*>($3), yylineno);}
+ExpBool: Exp EQUALITY Exp                       {$$ = new Exp("relop",dynamic_cast<Exp*>($1), dynamic_cast<Exp*>($3), yylineno);}
+ExpBool: LPAREN ExpBool RPAREN                      {$$ = $2;}
+Exp: LPAREN Type RPAREN Exp                 {$$ = new Exp(dynamic_cast<Exp*>($4), $2->terminalVal,yylineno);}
+
+ExpBool: Exp                                 {$$ = new ExpBool(dynamic_cast<Exp*>($1), yylineno);}
+
 
 M:                                          {sym_table_scopes.open_scope();}
+In:     {$$ = new Node(CodeBuffer::instance().freshLabel()); CodeBuffer::instance().emit($$->terminalVal+":");}
+Out:    {$$ = new Node(CodeBuffer::instance().freshLabel()); CodeBuffer::instance().emit($$->terminalVal+":");}
 %%
 
 
@@ -116,8 +125,13 @@ int main() {
     sym_table_scopes.add_symbol("print", "VOID", 0,{"STRING"}, true);
     sym_table_scopes.add_symbol("printi", "VOID", 0,{"num"}, true);
     sym_table_scopes.add_symbol("readi", "INT", 0,{"num"} ,true);
+
     //yydebug = 1;
+    CodeBuffer::instance().emitOpen();
+    CodeBuffer::instance().emit(CodeBuffer::instance().freshLabel()+":");
     int check = yyparse();
+    CodeBuffer::instance().emitClose();
+    CodeBuffer::instance().printCodeBuffer();
     sym_table_scopes.close_scope();
     return check;
 }

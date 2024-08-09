@@ -17,6 +17,12 @@ string CodeBuffer::freshLabel(){
 	return label.str();
 }
 
+string CodeBuffer::currentLabel(){
+    std::stringstream label;
+    label << "label_" << labels_num;
+    return label.str();
+}
+
 int CodeBuffer::emit(const string &s){
     buffer.push_back(s);
 	return buffer.size() - 1;
@@ -27,6 +33,14 @@ void CodeBuffer::printCodeBuffer(){
 	{
 		cout << *it << endl;
     }
+}
+
+int CodeBuffer::emitOpen(){
+    return emit("define i32 @main(){");
+}
+
+int CodeBuffer::emitClose(){
+    return emit("ret i32 0\n}");
 }
 
 // ******** Methods to handle the global section ********** //

@@ -1,4 +1,4 @@
-
+/*
 #include <stdio.h>
 typedef char byte;
 typedef char bool;
@@ -28,3 +28,4 @@ int readi(int a){
 int main(){
 #include "tempfile.c"
 }
+ */

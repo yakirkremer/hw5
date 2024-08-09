@@ -1,8 +1,0 @@
-void maxTestsStressArithmetic() {
-	auto x = 3 + 3 + 3 + 3 + 3 + 3 + 3 + 3 + 3 + 3 + 3 + 3 + 3 + 3 + 3 + 3 + 3 + 3 + 3 + 3 + 3 + 3;
-	printi(x);
-}
-
-void main() {
-     maxTestsStressArithmetic();
-}

@@ -12,8 +12,13 @@
 using namespace output;
 using namespace std;
 #include "tables.h"
+#include "CodeGen.h"
+#include "cg.hpp"
+#include <list>
 
 extern Scopes sym_table_scopes;
+//extern CodeGen  &coder = CodeGen::getInstance();
+//extern CodeBuffer &buffer = CodeBuffer::instance();
 
 #define CHECK false
 
@@ -24,17 +29,19 @@ class Node;
 #define EXP 2
 
 #define ERROR_EXIT 0
+#define DEFAULT 0
+
 
 class Type;
 class Exp;
 
 class Node {
 public:
-    //vector<string> names;
-    string name;
+    //vector<string> terminalVals;
+    string terminalVal;
 
-    Node(const string name = "");
-    Node(const Node* node);
+    Node(const string terminalVal = "");
+    Node(const Node* terminal);
 
     virtual ~Node() = default;
 };
@@ -46,6 +53,8 @@ public:
 };
 
 class Statements : public Node {
+
+
 public:
     string statement_type;
     Statements(Node *statement);
@@ -53,18 +62,25 @@ public:
 };
 
 class Statement : public Node {
+    string inLabel;
+    string outLabel;
+    string code;
 public:
-    Statement(Node *type, Node *name, int yylineno);
-    Statement( Node *name, Exp *exp, int yylineno, bool declare);
-    Statement(Node *type, Node *name, Exp *exp, int yylineno, bool declare);
+
+    Statement(Node *type, Node *terminalVal, int yylineno);
+    Statement( Node *terminalVal, Exp *exp, int yylineno, bool declare);
+    Statement(Node *type, Node *terminalVal, Exp *exp, int yylineno, bool declare);
     Statement(Exp * exp, const string type, int yylineno);
+    Statement(Node * terminalVal, int yylineno);
+    string getInLabel();
+    string getOutLabel();
 };
 
 class Call : public Node {
 
 public:
     string type;
-    Call(Node *node, Exp *exp, int yylineno);
+    Call(Node *terminal, Exp *exp, int yylineno);
 };
 
 class Type : public Node {
@@ -74,31 +90,40 @@ class Type : public Node {
 class Exp : public Node {
 
 public:
+    string code;
+    string var;
     string type;
+    string tmpLabel;
     bool is_var;
-    int val =0;
-    Exp(Exp * exp);
+    int numVal =0;
+    int size = 32;
+    Exp(Exp* exp);
+    //Num
+    Exp(const string type, Node * terminal, int yylineno);
     //Casting
     Exp(Exp* exp, const string type, int yylineno);
-    //NUM NUM B STRING TRUE FALSE
-    Exp(const string type, Node * node,int yylineno);
-    // Not EXP ,AND,OR,RELOP, EQUALITY
-    Exp(const string type,const string op, Exp * exp1, Exp * exp2, int yylineno);
     //Exp ADDITIVE Exp Exp MULTIPLICATIVE Exp
     Exp(const string op, Exp * exp1, Exp * exp2, int yylineno);
     //Exp ID
-    Exp(const string name,Node * node ,bool is_var, int yylineno);
+    Exp(const string terminalVal,Node * terminal ,bool is_var, int yylineno);
+
+    void regInit(string op, string opr1, string opr2);
+
 
 };
 
 class ExpBool: public Exp {
+
 public:
-    ExpBool(Exp * exp, int yylineno);
+    ExpBool(Exp * exp,int yylineno);
+    ExpBool(const string op, Exp * exp1, Exp * exp2, int yylineno);
+    string trueLabel;
+    string falseLabel;
 
 };
 
 
 
-Node* makeNode(int node_type,const string type, const string value);
+Node* makeNode(int terminal_type,const string type, const string value);
 
 #endif //HW3_TYPES_H

@@ -20,9 +20,15 @@ public:
 
 	//generates a jump location label for the next command and returns it
 	std::string freshLabel();
+    std::string currentLabel();
+    std::string currentInLabel();
+    //std::string currentTrueLabel = nullptr;
 
 	//writes command to the buffer, returns its location in the buffer
 	int emit(const std::string &command);
+
+    int emitOpen();
+    int emitClose();
 	
 	//prints the content of the code buffer to stdout
 	void printCodeBuffer();
@@ -32,6 +38,7 @@ public:
 	void emitGlobal(const string& dataLine);
 	//print the content of the global buffer to stdout
 	void printGlobalBuffer();
+
 
 };
 

@@ -1,5 +1,0 @@
-a: b c
-	echo a > a
-
-include m.b
-include m.c

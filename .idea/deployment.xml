@@ -12,7 +12,7 @@
       <paths name="Remote Host Compi (62206e5c-1f11-429e-9162-e302fa4243a9)">
         <serverdata>
           <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/tmp/hw5" local="$PROJECT_DIR$" />
           </mappings>
         </serverdata>
       </paths>
