@@ -1,4 +1,4 @@
-bool i;
-bool j;
-if(true)
-    int a;
+int x = 4;
+x = 4 + 5;
+if(x>x)
+int y = 0;

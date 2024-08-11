@@ -1,17 +1,8 @@
-
-	bool val=true;
-        if (val)
-		print("val is true");
-	else {
-		print("val is false");
-	}
-
-	if(true)
-    {
-        print("true");
-    }
-
-    if(false or false and  true)
-    {
-        print("true");
-    }
+int x = 4;
+byte y = 100 b;
+if (x > y) print("ok");
+if (y < x) {
+    int z = readi(x + y);
+    print("bad");
+}
+int z;

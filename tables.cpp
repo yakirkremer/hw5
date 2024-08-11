@@ -12,20 +12,21 @@ string convert_num(string s){
 }
 
 void print_table(SymbolTable *table) {
+    return;
     for (int i = 0; i < table->get_size(); i++) {
             cout << "Symbol " << table->get_symbol(i)->get_name()  << std::endl;
     }
 }
 
-bool SymbolTable::add_symbol(string name, string type,int size, bool is_function = false, string arg_type = "") {
+int SymbolTable::add_symbol(string name, string type,int size,string reg, bool is_function = false, string arg_type = "") {
     if(symbol_exists(name)){
         return false;
     }
 
-    symbols.push_back(new Symbol(name, type, max_offset, is_function,arg_type));
+    symbols.push_back(new Symbol(name, type, max_offset, is_function ,reg ,arg_type));
     max_offset += size;
 
-    return true;
+    return max_offset-size;
 }
 
 bool SymbolTable::symbol_exists(const std::string &name) {
@@ -67,6 +68,7 @@ bool SymbolTable::function_exists(const std::string &name) {
 
 bool SymbolTable::variable_exists(const std::string &name) {
     for(int i = 0; i < symbols.size(); i++){
+       // cout<<symbols[i]->get_name();
         if(symbols[i]->get_name() == name && !symbols[i]->is_function){
             return true;
         }
@@ -74,11 +76,11 @@ bool SymbolTable::variable_exists(const std::string &name) {
     return false;
 }
 
-bool Scopes::add_symbol(const string &name, const string &type, int size, string arg_type,bool is_function) {
+int Scopes::add_symbol(const string &name, const string &type, int size,string reg, bool is_function,string arg_type) {
     if(scope->symbol_exists(name)){
         return false;
     }
-    scope->add_symbol(name, type, size, is_function, arg_type);
+    return scope->add_symbol(name, type, size, reg, is_function,arg_type);
     //scope->max_offset += size;
     return true;
 }
