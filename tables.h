@@ -22,10 +22,10 @@ public:
     string arg_type;
     int offset;
     bool is_function;
-    string reg;
+    string pointer;
 
 
-    Symbol(const string name, const string type, int offset, bool is_function,string reg,const string arg_type =  "") : name(name), type(type), offset(offset),is_function(is_function),reg(reg), arg_type(arg_type) {}
+    Symbol(const string name, const string type, int offset, bool is_function,string pointer,const string arg_type =  "") : name(name), type(type), offset(offset),is_function(is_function),pointer(pointer), arg_type(arg_type) {}
     string get_name() const { return name; }
     string get_type() const { return type; }
     string get_arg_type() const {
@@ -55,7 +55,7 @@ public:
         this->symbols = vector<Symbol *>();
     }
 
-    int add_symbol(string name, string type, int size,string reg, bool is_function,string arg_type );
+    int add_symbol(string name, string type, int size,string pointer, bool is_function,string arg_type );
 
     bool symbol_exists(const string &name);
 
@@ -80,7 +80,7 @@ public:
 
     Scopes();
 
-    int add_symbol(const string &name, const string &type, int size,string reg ,bool is_function,string arg_type);
+    int add_symbol(const string &name, const string &type, int size,string pointer ,bool is_function,string arg_type);
     bool symbol_exists(const string &name);
     bool function_exists(const string &name);
     bool variable_exists(const string &name);

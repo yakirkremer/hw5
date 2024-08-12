@@ -5,6 +5,11 @@
 #include "tables.h"
 using namespace output;
 
+
+
+
+
+
 string convert_num(string s){
     if (s=="num")
         return "INT";
@@ -18,12 +23,12 @@ void print_table(SymbolTable *table) {
     }
 }
 
-int SymbolTable::add_symbol(string name, string type,int size,string reg, bool is_function = false, string arg_type = "") {
+int SymbolTable::add_symbol(string name, string type,int size,string pointer, bool is_function = false, string arg_type = "") {
     if(symbol_exists(name)){
         return false;
     }
 
-    symbols.push_back(new Symbol(name, type, max_offset, is_function ,reg ,arg_type));
+    symbols.push_back(new Symbol(name, type, max_offset, is_function ,pointer ,arg_type));
     max_offset += size;
 
     return max_offset-size;
@@ -76,11 +81,11 @@ bool SymbolTable::variable_exists(const std::string &name) {
     return false;
 }
 
-int Scopes::add_symbol(const string &name, const string &type, int size,string reg, bool is_function,string arg_type) {
+int Scopes::add_symbol(const string &name, const string &type, int size,string pointer, bool is_function,string arg_type) {
     if(scope->symbol_exists(name)){
         return false;
     }
-    return scope->add_symbol(name, type, size, reg, is_function,arg_type);
+    return scope->add_symbol(name, type, size, pointer, is_function,arg_type);
     //scope->max_offset += size;
     return true;
 }

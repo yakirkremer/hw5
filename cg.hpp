@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include "tables.h"
 
 using namespace std;
 
@@ -38,6 +39,7 @@ public:
 	void emitGlobal(const string& dataLine);
 	//print the content of the global buffer to stdout
 	void printGlobalBuffer();
+    void emitInit();
 
 
 };

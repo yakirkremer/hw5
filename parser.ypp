@@ -62,7 +62,7 @@ Statement: Type ID ASSIGN Exp SC            {$$ = new Statement(DEFINE_ASSIGN,$2
 Statement: ID ASSIGN Exp SC                 {$$ = new Statement(ASSIGN_ONLY,$1,$1,$3,yylineno);}
 Statement: Call SC                          {$$ =$1;}
 Statement: RETURN SC                        {$$ =$1;}
-| IF LPAREN ExpBool RPAREN M Statement { $$ = $3; sym_table_scopes.close_scope();}
+| IF LPAREN ExpBool RPAREN M Statement { $$ = $3; sym_table_scopes.close_scope();CodeBuffer::instance().emit("br label %" + dynamic_cast<Exp*>($3)->falseLabel->label); CodeBuffer::instance().emit(dynamic_cast<Exp*>($3)->falseLabel->label+":"); }
 | IF LPAREN ExpBool RPAREN M Statement ELSE { $$ = $3; sym_table_scopes.close_scope();} M Statement {sym_table_scopes.close_scope();}
 
 
@@ -119,11 +119,13 @@ int main() {
     sym_table_scopes.add_symbol("readi", "INT", 0,"" ,true,{"num"});
 
     //yydebug = 1;
+    CodeBuffer::instance().emitInit();
     CodeBuffer::instance().emitOpen();
     CodeBuffer::instance().emit(CodeBuffer::instance().freshLabel()+":");
     sym_table_scopes.stack = CodeGen::getInstance().stackInit();
     int check = yyparse();
     CodeBuffer::instance().emitClose();
+    CodeBuffer::instance().printGlobalBuffer();
     CodeBuffer::instance().printCodeBuffer();
     sym_table_scopes.close_scope();
     return check;

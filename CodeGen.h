@@ -11,6 +11,7 @@
 #include "cg.hpp"
 #include "types.h"
 class Exp;
+class Terminal;
 using namespace std;
 
 class CodeGen {
@@ -22,16 +23,18 @@ public:
     string freshVar();
     static CodeGen &getInstance();
     string stackInit();
-    void genBranch(const string var,const string &label);
-    string genExp(Exp *exp);
-    string genExp(Exp *exp1,Exp *exp2 , string op);
+    void genBranch(Exp * exp);
+    void genExp(Exp *exp);
+    string genExp(Exp *exp1,Exp *exp2 , Terminal * op);
     string genNum(string num = "0");
     string genStr(Exp *exp);
     string genBool(Exp *exp);
     string genID(string reg, int offset);
+    string loadID(string pointer);
     //string genAssign(string reg);
     void var_emit(const string &var);
-    string genBool(Exp *exp1, Exp *exp2, string op);
+    string genBool(Exp *exp1, Exp *exp2, string op, Exp * exp);
+    void genCall(string func, string pointer);
 
 };
 

@@ -27,6 +27,28 @@ extern Scopes sym_table_scopes;
 
 #define ERROR_EXIT -1
 
+class Branch;
+
+class Label{
+public:
+    string label;
+    string code;
+    Label *trueLabel;
+    Label *falseLabel;
+    Label();
+    Label(string label);
+    virtual ~Label() = default;
+
+
+};
+
+class Branch{
+public:
+    string code;
+    Label *trueLabel;
+    Label *falseLabel;
+};
+
 class Exp;
 class Terminal {
 public:
@@ -39,8 +61,10 @@ public:
 
 class Exp :public Terminal{
 
-
 public:
+    Label *trueLabel;
+    Label *falseLabel;
+    Label * curLabel;
     string code;
     string reg;
     string exp_type;
@@ -49,12 +73,16 @@ public:
     Exp(Terminal * exp1,Terminal * exp2,string type, string op,Terminal * opTerminal ,int line);
     Exp(Terminal* exp,string new_type ,int line);
     Exp(Exp*);
+     void emit(string code);
+     //string getCode(){return curLabel->code;}
+     string getCode(){return code;}
 
 };
 
 class ExpBool :public Exp{
 public:
     ExpBool(Terminal * exp, int yylineno);
+    void buildCode();
 };
 
 class Call : public Terminal {
@@ -67,8 +95,11 @@ public:
 class Statement:public Terminal{
 
 public:
+    Label *trueLabel;
+    Label *falseLabel;
     Exp *exp;
     Statement(int mode, Terminal * id, Terminal  * type, Terminal * exp, int line);
+    Statement(Terminal * expBool);
 };
 
 string num_type(const string type);

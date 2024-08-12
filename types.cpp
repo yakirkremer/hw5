@@ -50,6 +50,13 @@ bool check_exp(std::string newType,string op,Terminal *exp1, Terminal *exp2, int
     return true;
 }
 
+Label::Label() {
+    label = CodeBuffer::instance().freshLabel();
+    code = label + ":\n";
+}
+
+Label::Label(string label) : label(label) {}
+
 Terminal::Terminal(const string terminalVal) : val(terminalVal) {}
 
 Terminal::Terminal() {
@@ -70,13 +77,38 @@ Exp::Exp(Terminal *exp1, Terminal *exp2, std::string newType, std::string op,Ter
     //and, or, not
     if(newType == "BOOL"){
         check_exp(newType,op,exp1,exp2, line);
-
         this->exp_type =  newType;
+        if(op == "and"){
+            curLabel = new Label();
+            trueLabel = dynamic_cast<Exp*>(exp2)->trueLabel;
+            falseLabel = dynamic_cast<Exp*>(exp1)->falseLabel;
+            dynamic_cast<Exp*>(exp1)->emit(dynamic_cast<Exp*>(exp1)->trueLabel->label + ":");
+            dynamic_cast<Exp*>(exp2)->emit(dynamic_cast<Exp*>(exp2)->falseLabel->label + ":");
+            dynamic_cast<Exp*>(exp2)->emit("br label %" + falseLabel->label);
+            dynamic_cast<Exp*>(exp1)->emit(dynamic_cast<Exp*>(exp2)->getCode());
+            emit(dynamic_cast<Exp*>(exp1)->getCode());
+            //emit(dynamic_cast<Exp*>(exp2)->getCode());
+        }
+        if(op == "or"){
+            curLabel = new Label();
+
+            trueLabel = dynamic_cast<Exp*>(exp1)->trueLabel;
+            falseLabel = dynamic_cast<Exp*>(exp2)->falseLabel;
+            dynamic_cast<Exp*>(exp1)->emit(dynamic_cast<Exp*>(exp1)->falseLabel->label + ":");
+            dynamic_cast<Exp*>(exp2)->emit(dynamic_cast<Exp*>(exp2)->trueLabel->label + ":");
+            dynamic_cast<Exp*>(exp2)->emit("br label %" + trueLabel->label);
+            dynamic_cast<Exp*>(exp1)->emit(dynamic_cast<Exp*>(exp2)->getCode());
+            emit(dynamic_cast<Exp*>(exp1)->getCode());
+            //emit(dynamic_cast<Exp*>(exp2)->getCode());
+        }
     }
 
     if(op == "relop"){
         check_exp(newType,op,exp1,exp2, line);
-        reg = CodeGen::getInstance().genBool(dynamic_cast<Exp *>(exp1), dynamic_cast<Exp *>(exp2), op);
+
+        reg = CodeGen::getInstance().genBool(dynamic_cast<Exp *>(exp1), dynamic_cast<Exp *>(exp2), opTerminal->val, this);
+        CodeGen::getInstance().genBranch(this);
+       //cout<<curLabel->code;
     }
     //relop
 
@@ -86,7 +118,7 @@ Exp::Exp(Terminal *exp1, Terminal *exp2, std::string newType, std::string op,Ter
         if (dynamic_cast<Exp *>(exp1)->exp_type != "INT" && dynamic_cast<Exp *>(exp2)->exp_type != "INT") {
             this->exp_type = "BYTE";
         }
-        reg = CodeGen::getInstance().genExp(dynamic_cast<Exp *>(exp1), dynamic_cast<Exp *>(exp2), op);
+        reg = CodeGen::getInstance().genExp(dynamic_cast<Exp *>(exp1), dynamic_cast<Exp *>(exp2), opTerminal);
     }
 
     if(op == "cast"){
@@ -105,7 +137,7 @@ Exp::Exp(Terminal *exp1, Terminal *exp2, std::string newType, std::string op,Ter
 }
 
 //Exp: LPAREN Exp RPAREN
-Exp::Exp(Exp * exp):Terminal(exp->val), code(exp->code),exp_type(exp->exp_type) {}
+Exp::Exp(Exp * exp):Terminal(exp->val), code(exp->code),exp_type(exp->exp_type),trueLabel(exp->trueLabel), falseLabel(exp->falseLabel), curLabel(exp->curLabel) {}
 
 //Exp: ID
 //Exp: Call
@@ -125,21 +157,34 @@ Exp::Exp(Terminal * exp1,string newType, int line):Terminal(exp1->val),exp_type(
             exit(ERROR_EXIT);
         }
         this->exp_type = sym_table_scopes.get_symbol(exp1->val)->get_type();
+        string pointer = sym_table_scopes.get_symbol(exp1->val)->pointer;
+        reg = CodeGen::getInstance().loadID(pointer);
+        return;
+
     }
 
     if(newType == "Call"){
         this->exp_type = dynamic_cast<Call*>(exp1)->func_type;
     }
-    reg = CodeGen::getInstance().getInstance().genExp(this);
+    CodeGen::getInstance().getInstance().genExp(this);
 
 
 }
+
+void Exp::emit(std::string add_code) {
+    code = code +"\n" + add_code;
+}
+
+
 
 ExpBool::ExpBool(Terminal *exp, int line): Exp(dynamic_cast<Exp*>(exp)) {
     if(dynamic_cast<Exp*>(exp)->exp_type != "BOOL"){
         errorMismatch(line);
         exit(ERROR_EXIT);
     }
+
+    CodeBuffer::instance().emit(dynamic_cast<Exp*>(exp)->getCode());
+    CodeBuffer::instance().emit(dynamic_cast<Exp*>(exp)->trueLabel->code);
 }
 
 Call::Call(Terminal *terminal, Terminal *exp, int line) {
@@ -152,7 +197,13 @@ Call::Call(Terminal *terminal, Terminal *exp, int line) {
         errorPrototypeMismatch(line,terminal->val,sym_table_scopes.get_symbol(terminal->val)->get_arg_type_for_print());
         exit(ERROR_EXIT);
     }
+
+        CodeGen::getInstance().genCall(sym_table_scopes.get_symbol(terminal->val)->name,dynamic_cast<Exp*>(exp)->reg);
+
+
+
 }
+
 
 Statement::Statement(int mode, Terminal *id, Terminal *type, Terminal *exp, int line) {
     switch (mode) {
@@ -170,9 +221,9 @@ Statement::Statement(int mode, Terminal *id, Terminal *type, Terminal *exp, int 
                 errorMismatch(line);
                 exit(ERROR_EXIT);
             }
-            string reg = dynamic_cast<Exp *>(exp)->reg;
+            string exp_reg = dynamic_cast<Exp *>(exp)->reg;
             int offset = sym_table_scopes.get_symbol(id->val)->offset;
-            CodeGen::getInstance().genID(reg, offset);
+            CodeGen::getInstance().genID(exp_reg, offset);
             break;
         }
         //Type ID SC
@@ -183,8 +234,8 @@ Statement::Statement(int mode, Terminal *id, Terminal *type, Terminal *exp, int 
                 exit(ERROR_EXIT);
             }
             int offset = sym_table_scopes.scope->max_offset;
-            string reg = CodeGen::getInstance().genID(CodeGen::getInstance().genNum(), offset);
-            sym_table_scopes.add_symbol(id->val, type->val, 1,reg , false, "");
+            string pointer = CodeGen::getInstance().genID(CodeGen::getInstance().genNum(), offset);
+            sym_table_scopes.add_symbol(id->val, type->val, 1,pointer , false, "");
 
             break;
         }
@@ -206,12 +257,17 @@ Statement::Statement(int mode, Terminal *id, Terminal *type, Terminal *exp, int 
             }
 
             int offset = sym_table_scopes.scope->max_offset;
-            string reg = CodeGen::getInstance().genID(dynamic_cast<Exp*>(exp)->reg, offset);
-            sym_table_scopes.add_symbol(id->val, type->val, 1,reg , false,"");
+            string pointer = CodeGen::getInstance().genID(dynamic_cast<Exp*>(exp)->reg, offset);
+            sym_table_scopes.add_symbol(id->val, type->val, 1,pointer , false,"");
             break;
         }
 
     }
+}
+
+Statement::Statement(Terminal *expBool) {
+    trueLabel = dynamic_cast<Exp*>(expBool)->trueLabel;
+    falseLabel = dynamic_cast<Exp*>(expBool)->falseLabel;
 }
 
 
