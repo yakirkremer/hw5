@@ -34,3 +34,4 @@ label_2:
 store i32 %t3, i32* %t4
 ret i32 0
 }
+
