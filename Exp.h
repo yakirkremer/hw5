@@ -119,9 +119,7 @@ public:
     bool check_exp(string type_s, Exp * exp, int line);
 };
 
-class ExpCall:public Exp{
-    ExpCall(string id, int line);
-};
+
 
 
 class IfStatement:public Exp{
@@ -141,11 +139,11 @@ public:
     WhileStatement(string label, Exp * exp,int line);
 };
 
-class Call : public Exp {
+class ExpCall : public Exp {
 
 public:
     string func_type;
-    Call(Exp * exp1 , Exp *exp2, int yylineno);
+    ExpCall(Exp * exp1 , Exp *exp2, int yylineno);
 };
 
 class Vars{

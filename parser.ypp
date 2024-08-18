@@ -129,7 +129,7 @@ Statement: CONTINUE SC
     CodeBuffer::instance().emit("br label %" + sym_table_scopes.get_start());
 }
 
-Call: ID LPAREN Exp RPAREN                  { $$ = new Call($1, dynamic_cast<Exp*>($3),yylineno); }
+Call: ID LPAREN Exp RPAREN                  { $$ = new ExpCall($1, dynamic_cast<Exp*>($3),yylineno); }
 
 Type: INT                                   {$$ =$1;}
 Type: BYTE                                  {$$ =$1;}

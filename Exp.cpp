@@ -49,8 +49,7 @@ string numOperator(string op) {
 string loadID(string pointer, string type,Exp) {
     string var = Vars::getInstance().freshvar();
     CodeBuffer::instance().emit(var + " = load i32, i32* " + pointer);
-    //var = genTrunc(var, type);
-    //var = cast(var, type, "INT");
+
     return var;
 }
 
@@ -154,8 +153,8 @@ ExpStr::ExpStr(Exp *str, int line) {
 }
 
 void ExpBool::emitAssign(string code1) {
-    //code += code1 + "\n";
-    //valCode += code1 + "\n";
+
+
 }
 
 bool ExpBool::check_exp(string op, Exp * exp1, Exp * exp2, int line) {
@@ -183,7 +182,7 @@ ExpBool::ExpBool(string  exp_reg,string code1, int line){
     bool_var = Vars::getInstance().freshvar();
     emit(reg + " = add i32 0, " + exp_reg);
     icmp = (" = icmp eq i32 " + reg + ", 1");
-   // emitAssign(bool_var + icmp);
+
 }
 
 
@@ -194,40 +193,10 @@ ExpBool::ExpBool(Exp * boolean, int line) {
     reg = Vars::getInstance().freshvar();
     bool_var = Vars::getInstance().freshvar();
     icmped = true;
-    //emitAssign(reg + " = add i32 0, " + boolean->val);
-    //emit(reg + " = add i32 0, " + boolean->val);
-    //icmp = (" = icmp eq i32 " + reg + ", 1");
-    //emitAssign(bool_var + icmp);
+
 
 }
 
-/*
-ExpBool::ExpBool(Exp * boolean, int line) {
-    type = "BOOL";
-    reg = Vars::getInstance().freshvar();
-    bool_var = Vars::getInstance().freshvar();
-    emitAssign(reg + " = add i32 0, " + boolean->val);
-    emit(reg + " = add i32 0, " + boolean->val);
-    emit(bool_var + " = icmp eq i32 " + reg + ", 1");
-    trueLabel = CodeBuffer::instance().freshLabel();
-    falseLabel = CodeBuffer::instance().freshLabel();
-    nextLabel = CodeBuffer::instance().freshLabel();
-    emit("br i1 " + bool_var + ", label %" + trueLabel + ", label %" + falseLabel);
-    emit(trueLabel + ":");
-    string true_var = Vars::getInstance().freshvar();
-    emit(true_var + " = add i32 0, 1");
-    emit("br label %" + nextLabel);
-    emit(falseLabel + ":");
-    string false_var = Vars::getInstance().freshvar();
-    emit(false_var + " = add i32 0, 0");
-    emit("br label %" + nextLabel);
-    emit(nextLabel + ":");
-    reg = Vars::getInstance().freshvar();
-    emit(reg + " = phi i32 [" + true_var + ", %" + trueLabel + "], [" + false_var + ", %" + falseLabel + "]");
-
-    //emitAssign(bool_var + icmp);
-
-}*/
 
 ExpBool::ExpBool(Exp *exp1, std::string op, int line) {
 
@@ -249,22 +218,6 @@ ExpBool::ExpBool(Exp *exp1, std::string op, int line) {
     reg = bool1->reg;
     //emit(exp1->getCode());
 }
-/*
-ExpBool::ExpBool(Exp *exp1, Exp *exp2, string op, int line) {
-    type = "BOOL";
-    ExpBool *bool1 = dynamic_cast<ExpBool *>(exp1);
-    ExpBool *bool2 = dynamic_cast<ExpBool *>(exp2);
-    trueLabel = CodeBuffer::instance().freshLabel();
-    falseLabel = CodeBuffer::instance().freshLabel();
-    nextLabel = CodeBuffer::instance().freshLabel();
-    if (op == "and") {
-        emit(bool1->getCode());
-
-        emit(bool2->getCode());
-
-
-    }
-}*/
 //BOOL And Or Not
 
 ExpBool::ExpBool(Exp *exp1, Exp *exp2, string op, int line) {
@@ -415,14 +368,7 @@ AssignStatement::AssignStatement( std::string type,std::string id, Exp *exp, int
     check_exp(id,exp->type,line,DEFINE_ASSIGN);
     Exp * assign_exp = dynamic_cast<Exp*>(exp);
     if(exp->type == "BOOL"){
-        /*
-        //dynamic_cast<ExpBool*>(exp)->emitAssign(dynamic_cast<ExpBool*>(exp)->valCode);
-        dynamic_cast<ExpBool*>(exp)->genIcmp();
 
-        string oldReg = exp->reg;
-        exp->reg = Vars::getInstance().freshvar();
-        dynamic_cast<ExpBool*>(exp)->emitAssign(exp->reg + " = zext i1 " + oldReg + " to i32");
-        emit(dynamic_cast<ExpBool*>(exp)->valCode);*/
         dynamic_cast<ExpBool*>(exp)->genBranch();
         CodeBuffer::instance().emit(exp->getCode());
         CodeBuffer::instance().emit(dynamic_cast<ExpBool*>(exp)->trueLabel + ":");
@@ -448,14 +394,7 @@ AssignStatement::AssignStatement( std::string id, Exp *exp, int line) {
     check_exp(id,exp->type,line ,ASSIGN_ONLY);
     Exp * assign_exp = dynamic_cast<Exp*>(exp);
     if(exp->type == "BOOL"){
-        /*
-        //dynamic_cast<ExpBool*>(exp)->emitAssign(dynamic_cast<ExpBool*>(exp)->valCode);
-        dynamic_cast<ExpBool*>(exp)->genIcmp();
 
-        string oldReg = exp->reg;
-        exp->reg = Vars::getInstance().freshvar();
-        dynamic_cast<ExpBool*>(exp)->emitAssign(exp->reg + " = zext i1 " + oldReg + " to i32");
-        emit(dynamic_cast<ExpBool*>(exp)->valCode);*/
         dynamic_cast<ExpBool*>(exp)->genBranch();
         CodeBuffer::instance().emit(exp->getCode());
         CodeBuffer::instance().emit(dynamic_cast<ExpBool*>(exp)->trueLabel + ":");
@@ -493,7 +432,7 @@ DefineStatement::DefineStatement( std::string type,std::string id, int line) {
 
 
 
-Call::Call(Exp * terminal, Exp *exp, int line) {
+ExpCall::ExpCall(Exp * terminal, Exp *exp, int line) {
     if(sym_table_scopes.function_exists(terminal->val) == false){
         errorUndefFunc(line,terminal->val);
         exit(ERROR_EXIT);
@@ -542,7 +481,7 @@ ExpCast::ExpCast(std::string type, Exp *exp, int line) {
 
 IfStatement::IfStatement(std::string label,Exp * exp, int line) {
 
-    //reg = genBool(exp, line);
+
 
 }
 
@@ -583,8 +522,7 @@ IfElseStatement::IfElseStatement(std::string label, Exp *exp, int line) {
 }
 
 WhileStatement::WhileStatement(std::string label, Exp *exp, int line) {
-    //CodeBuffer::instance().emit("br label %" + dynamic_cast<ExpBool*>(exp)->falseLabel);
-   // CodeBuffer::instance().emit(dynamic_cast<ExpBool*>(exp)->falseLabel+":");
+
 }
 
 Vars &Vars::getInstance() {
