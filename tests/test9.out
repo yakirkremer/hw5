@@ -1,7 +1,18 @@
----end scope---
-a INT 0
----end scope---
-c BYTE 0
----end scope---
-d INT 0
-line 4: type mismatch
+8
+7
+6
+5
+4
+skip
+2
+1
+10
+9
+8
+7
+6
+5
+skip
+skip
+skip
+skip

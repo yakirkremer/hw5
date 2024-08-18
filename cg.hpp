@@ -33,8 +33,10 @@ public:
 	
 	//prints the content of the code buffer to stdout
 	void printCodeBuffer();
+    void printCodeBuffer2();
 
-	// ******** Methods to handle the data section ******** //
+
+    // ******** Methods to handle the data section ******** //
 	//write a line to the global section
 	void emitGlobal(const string& dataLine);
 	//print the content of the global buffer to stdout

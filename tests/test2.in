@@ -1,8 +1,8 @@
-bool c = false;
-if (not c) {
-    int x = 6;
-    int y = x + 3;
-    printi(y);
-}
-else
-    syntax error;
+    byte i = 0b;
+    while (i < 10) {
+        printi(i);
+        if (i+1 < 10)
+            print("*");
+        i = i + 1b;
+    }
+    print("*");

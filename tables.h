@@ -43,6 +43,8 @@ public:
 
 class SymbolTable {
 public:
+    string start;
+    string end;
     vector<Symbol *> symbols;
     int offset;
     int max_offset;
@@ -50,8 +52,8 @@ public:
 
     Symbol* get_symbol(int index) const { return symbols[index]; }
     int get_size() const { return symbols.size(); }
-    SymbolTable(int offset)
-            :max_offset(offset),offset(offset) {
+    SymbolTable(int offset, bool is_loop, string start = "", string end = "")
+            :max_offset(offset),offset(offset), start(start) ,end(end) {
         this->symbols = vector<Symbol *>();
     }
 
@@ -85,9 +87,11 @@ public:
     bool function_exists(const string &name);
     bool variable_exists(const string &name);
     Symbol* get_symbol(const string &name);
-    void open_scope(bool new_loop = false);
+    void open_scope(bool new_loop = false, string start = "", string end = "");
     void close_scope();
     bool in_loop();
+    string get_start();
+    string get_end();
 
 
 };

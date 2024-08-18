@@ -27,5 +27,4 @@ int readi(int a){
 
 int main(){
 #include "tempfile.c"
-}
- */
+}*/

@@ -1,7 +1,7 @@
 //
 // Created by yakir on 8/9/2024.
 //
-
+/*
 #ifndef HW3_TYPES_H
 #define HW3_TYPES_H
 
@@ -28,7 +28,7 @@ extern Scopes sym_table_scopes;
 #define ERROR_EXIT -1
 
 class Branch;
-
+string freshLabel();
 class Label{
 public:
     string label;
@@ -59,23 +59,36 @@ public:
     virtual ~Terminal() = default;
 };
 
+
+/*class nextLabel : public Terminal{
+public:
+    string label;
+    nextLabel(){label = freshLabel();}
+    nextLabel(string label):label(label){}
+};*/
+/*
 class Exp :public Terminal{
 
 public:
-    Label *trueLabel;
-    Label *falseLabel;
-    Label * curLabel;
+    Label *trueLabel = nullptr;
+    Label *falseLabel = nullptr;
+    Label * nextLabel;
     string code;
+    string branchCode;
     string reg;
     string exp_type;
+    bool branch = false;
     string& gen(string code1);
     string& gen(string code1, string code2);
     Exp(Terminal * exp1,Terminal * exp2,string type, string op,Terminal * opTerminal ,int line);
     Exp(Terminal* exp,string new_type ,int line);
     Exp(Exp*);
      void emit(string code);
+        void emitBranch(string code1);
+        void emitCode(string code1);
      //string getCode(){return curLabel->code;}
      string getCode(){return code;}
+     string getBranchCode(){return branchCode;}
 
 };
 
@@ -88,6 +101,7 @@ public:
 class Call : public Terminal {
 
 public:
+    string reg;
     string func_type;
     Call(Terminal *terminal, Terminal *exp, int yylineno);
 };
@@ -97,12 +111,14 @@ class Statement:public Terminal{
 public:
     Label *trueLabel;
     Label *falseLabel;
+    string nextLabel;
     Exp *exp;
     Statement(int mode, Terminal * id, Terminal  * type, Terminal * exp, int line);
     Statement(Terminal * expBool);
+    Statement(string nextLabel):nextLabel(nextLabel){}
 };
 
 string num_type(const string type);
 
-
+*/
 #endif //HW3_NEW_TYPES_H

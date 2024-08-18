@@ -101,7 +101,7 @@ Symbol *Scopes::get_symbol(const string &name) {
 
 Scopes::Scopes(): table_scopes(), offsets(), scope(nullptr) {
     offsets.push_back(0);
-    table_scopes.push_back(new SymbolTable(offsets.back()));
+    table_scopes.push_back(new SymbolTable(offsets.back(),false, "", ""));
     scope = table_scopes.back();
     //this->table_scopes.push_back(new SymbolTable(0));
     //this->scope = table_scopes.back();
@@ -110,14 +110,18 @@ Scopes::Scopes(): table_scopes(), offsets(), scope(nullptr) {
 
 void print_scopes(vector<SymbolTable *> scopes) {
     for (int i = 0; i < scopes.size(); i++) {
-        cout << "Scope " << i << std::endl;
-        print_table(scopes[i]);
+        //cout << "Scope " << scopes[i]->start <<scopes[i]->end << std::endl;
+        //print_table(scopes[i]);
     }
 }
 
-void Scopes::open_scope(bool new_loop) {
+void Scopes::open_scope(bool new_loop, string start, string end) {
     offsets.push_back(scope->max_offset);
-    table_scopes.push_back(new SymbolTable(offsets.back()));
+    if(!new_loop){
+        start = scope->start;
+        end = scope->end;
+    }
+    table_scopes.push_back(new SymbolTable(offsets.back(), new_loop, start, end));
     bool is_loop_open = scope->is_loop;
     scope = table_scopes.back();
     if(is_loop_open || new_loop){
@@ -166,6 +170,15 @@ bool Scopes::variable_exists(const std::string &name) {
     }
 
     return false;
+}
+
+string Scopes::get_start() {
+    return scope->start;
+}
+
+string Scopes::get_end() {
+    print_scopes(table_scopes);
+    return scope->end;
 }
 
 

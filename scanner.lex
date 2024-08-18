@@ -1,7 +1,8 @@
 %{
 
 /* Declarations section */
-#include "types.h"
+//#include "types.h"
+#include "Exp.h"
 #include "hw3_output.hpp"
 using namespace output;
 #include "parser.tab.hpp"
@@ -16,35 +17,35 @@ printable [ -~]
 escape [\n]
 
 %%
-int                     yylval=new Terminal("INT");    return INT;
-byte                    yylval=new Terminal("BYTE");    return BYTE;
-b                       yylval=new Terminal(yytext);    return B;
-bool                    yylval=new Terminal("BOOL");    return BOOL;
-and                     yylval=new Terminal(yytext);  return AND;
-or                      yylval=new Terminal(yytext);  return OR;
-not                     yylval=new Terminal(yytext);  return NOT;
-true                    yylval=new Terminal(yytext);  return TRUE;
-false                  yylval=new Terminal(yytext);   return FALSE;
-return                  yylval=new Terminal(yytext);  return RETURN;
-if                      yylval=new Terminal(yytext);  return IF;
-else                    yylval=new Terminal(yytext);  return ELSE;
-while                  yylval=new Terminal(yytext);   return WHILE;
-break                  yylval=new Terminal(yytext);   return BREAK;
-continue               yylval=new Terminal(yytext);   return CONTINUE;
-;                       yylval=new Terminal(yytext);  return SC;
-\(                      yylval=new Terminal(yytext);  return LPAREN;
-\)                     yylval=new Terminal(yytext);   return RPAREN;
-\{                      yylval=new Terminal(yytext);  return LBRACE;
-\}                     yylval=new Terminal(yytext);   return RBRACE;
-=                      yylval=new Terminal(yytext);   return ASSIGN;
-"<="|">="|<|>          yylval=new Terminal(yytext);  return RELOP;
-==|!=                  yylval=new Terminal(yytext);   return EQUALITY;
-[-+]                   yylval=new Terminal(yytext);   return ADDITIVE;
-[*/]                   yylval=new Terminal(yytext);   return MULTIPLICATIVE;
-[a-zA-Z][a-zA-Z0-9]*     yylval=new Terminal(yytext); return ID;
-[1-9][0-9]*|0          yylval=new Terminal(yytext);   return NUM;
+int                     yylval=new Exp("INT");    return INT;
+byte                    yylval=new Exp("BYTE");    return BYTE;
+b                       yylval=new Exp(yytext);    return B;
+bool                    yylval=new Exp("BOOL");    return BOOL;
+and                     yylval=new Exp(yytext);  return AND;
+or                      yylval=new Exp(yytext);  return OR;
+not                     yylval=new Exp(yytext);  return NOT;
+true                    yylval=new Exp("1");  return TRUE;
+false                  yylval=new Exp("0");   return FALSE;
+return                  yylval=new Exp(yytext);  return RETURN;
+if                      yylval=new Exp(yytext);  return IF;
+else                    yylval=new Exp(yytext);  return ELSE;
+while                  yylval=new Exp(yytext);   return WHILE;
+break                  yylval=new Exp(yytext);   return BREAK;
+continue               yylval=new Exp(yytext);   return CONTINUE;
+;                       yylval=new Exp(yytext);  return SC;
+\(                      yylval=new Exp(yytext);  return LPAREN;
+\)                     yylval=new Exp(yytext);   return RPAREN;
+\{                      yylval=new Exp(yytext);  return LBRACE;
+\}                     yylval=new Exp(yytext);   return RBRACE;
+=                      yylval=new Exp(yytext);   return ASSIGN;
+"<="|">="|<|>          yylval=new Exp(yytext);  return RELOP;
+==|!=                  yylval=new Exp(yytext);   return EQUALITY;
+[-+]                   yylval=new Exp(yytext);   return ADDITIVE;
+[*/]                   yylval=new Exp(yytext);   return MULTIPLICATIVE;
+[a-zA-Z][a-zA-Z0-9]*     yylval=new Exp(yytext); return ID;
+[1-9][0-9]*|0          yylval=new Exp(yytext);   return NUM;
 \/\/[^\r\n]*            ;
-\"([ !#-\[\]-~]|\\[\\\"nrt0]|\\x[0-7][0-9A-Fa-f])+\"  yylval=new Terminal(yytext);    return STRING;
+\"([ !#-\[\]-~]|\\[\\\"nrt0]|\\x[0-7][0-9A-Fa-f])+\"  yylval=new Exp(yytext);    return STRING;
 {whitespace}            ;
 .                       {errorLex(yylineno); exit(1);}
 %%

@@ -1,0 +1,56 @@
+rogram: Statements                         {}
+Statements: Statement                       {}
+Statements: Statements Statement            {}
+
+//Condition: IF LPAREN ExpBool RPAREN M  {CodeBuffer::instance().emit(dynamic_cast<ExpBool*>($3)->trueLabel);} Statement {CodeBuffer::instance().emit(dynamic_cast<ExpBool*>($3)->falseLabel);}
+
+
+Statement: LBRACE {sym_table_scopes.open_scope();} Statements RBRACE        {sym_table_scopes.close_scope();}
+
+Statement: Type ID SC                       {$$ = new Statement($1, $2,yylineno);}
+Statement: Type ID ASSIGN Exp SC            {$$ = new Statement($1, $2, dynamic_cast<Exp*>($4),yylineno, true);}
+
+Statement: ID ASSIGN Exp SC                 {$$ = new Statement($1, dynamic_cast<Exp*>($3),yylineno, true);}
+Statement: Call SC                          {$$ =new Statement($1,yylineno);}
+Statement: RETURN SC                        {$$ =new Statement($1,yylineno);}
+| IF LPAREN ExpBool RPAREN M  Statement  {     sym_table_scopes.close_scope();}
+| IF   LPAREN ExpBool RPAREN M  Statement  ELSE {  sym_table_scopes.close_scope();} M {$$ = new Node(CodeBuffer::instance().freshLabel());CodeBuffer::instance().emit("br label %" + $$->terminalVal);  CodeBuffer::instance().emit(dynamic_cast<ExpBool*>($3)->falseLabel + ":");} Statement {sym_table_scopes.close_scope();CodeBuffer::instance().emit($10->terminalVal + ":");}
+
+
+
+
+Statement: WHILE LPAREN ExpBool {$$ = new Statement(dynamic_cast<Exp*>($3), "BOOL",yylineno);} RPAREN {sym_table_scopes.open_scope(true);} Statement {sym_table_scopes.close_scope();}
+Statement: BREAK SC                         {if(!sym_table_scopes.in_loop()) {errorUnexpectedBreak(yylineno);exit(ERROR_EXIT);}}
+Statement: CONTINUE SC                      {if(!sym_table_scopes.in_loop()) {errorUnexpectedContinue(yylineno);exit(ERROR_EXIT);}}
+
+Call: ID LPAREN Exp RPAREN                  {$$ = new Call($1, dynamic_cast<Exp*>($3),yylineno);}
+
+Type: INT                                   {$$ =$1;}
+Type: BYTE                                  {$$ =$1;}
+Type: BOOL                                  {$$ =$1;}
+
+Exp: LPAREN Exp RPAREN                      {$$ = $2;}
+
+Exp: Exp MULTIPLICATIVE Exp                 {$$ = new Exp("mul", dynamic_cast<Exp*>($1), dynamic_cast<Exp*>($3),yylineno);}
+Exp: Exp ADDITIVE Exp                       {$$ = new Exp("add", dynamic_cast<Exp*>($1), dynamic_cast<Exp*>($3),yylineno);}
+
+Exp: ID                                     {$$ = new Exp($1->terminalVal,$1,true,yylineno);}
+Exp: Call                                   {$$ = new Exp($1->terminalVal,$1,false,yylineno);}
+
+Exp: NUM                                    {$$ = new Exp("INT",$1,yylineno);}
+Exp: NUM B                                  {$$ = new Exp("BYTE",$1,yylineno);}
+Exp: STRING                                 {$$ = new Exp("STRING",$1,yylineno);}
+
+Exp: TRUE                                   {$$ = new Exp("BOOL", $1, yylineno);}
+Exp: FALSE                                  {$$ = new Exp("BOOL", $1, yylineno);}
+
+ExpBool: NOT ExpBool                               {$$ = new ExpBool( "not", dynamic_cast<Exp*>($2), dynamic_cast<Exp*>($2),yylineno);}
+ExpBool: ExpBool AND ExpBool                            {$$ = new ExpBool( $2->terminalVal, dynamic_cast<Exp*>($1), dynamic_cast<Exp*>($3),yylineno);}
+ExpBool: ExpBool OR ExpBool                            {}
+
+ExpBool: Exp RELOP Exp                          {$$ = new Exp("relop",dynamic_cast<Exp*>($1), dynamic_cast<Exp*>($3), yylineno);}
+ExpBool: Exp EQUALITY Exp                       {$$ = new Exp("relop",dynamic_cast<Exp*>($1), dynamic_cast<Exp*>($3), yylineno);}
+ExpBool: LPAREN ExpBool RPAREN                      {$$ = $2;}
+Exp: LPAREN Type RPAREN Exp                 {$$ = new Exp(dynamic_cast<Exp*>($4), $2->terminalVal,yylineno);}
+
+ExpBool: Exp                                 {$$ = new ExpBool(dynamic_cast<Exp*>($1), yylineno);}
